@@ -147,8 +147,6 @@ public class DbFunctions {
                         System.out.print(rs.getString("id") + "  ");
                         System.out.print(rs.getString("date") + "  ");
                         System.out.print(rs.getString("time") + "  ");
-                        System.out.print(rs.getString("truck") + "  ");
-                        System.out.print(rs.getString("goal") + "  ");
                         System.out.println(rs.getString("location") + "  ");
                     }
                     break;
@@ -191,7 +189,7 @@ public class DbFunctions {
         Statement statement;
         int random_int = (int)Math.floor(Math.random()*(1+100-1)+1);
         try{
-            String query = String.format("create table drive%s(id BIGSERIAL, donorID int, given int, primary key(id), foreign key(donorID) references donors(id));", id);
+            String query = String.format("create table drive%s(id BIGSERIAL, donorID int unique, given int, primary key(id), foreign key(donorID) references donors(id));", id);
             statement=conn.createStatement();
             statement.executeUpdate(query);
             do{
@@ -207,38 +205,110 @@ public class DbFunctions {
         }
     }
 
-    public void editDrive(Connection conn){
+//    public void editDrive(Connection conn){
+//        Statement statement;
+//        ResultSet rs;
+//        String choice;
+//        Scanner in = new Scanner(System.in);
+//        System.out.println("Drive id?");
+//        int driveID = in.nextInt();
+//        try{
+//            String query = String.format("SELECT TABLE_NAME FROM blooddrive.INFORMATION_SCHEMA.TABLES where TABLE_NAME='drive%s';",driveID);
+//            statement=conn.createStatement();
+//            rs=statement.executeQuery(query);
+//            while (rs.next()){
+//                String thisTable = rs.getString("TABLE_NAME");
+//                System.out.println(thisTable);
+//                do {
+//                    System.out.println("view all: 1\nview by pint: 2\nview by type: 3\nquit");
+//                    choice = in.nextLine();
+//                    switch (choice) {
+//                        case "1":
+//                            //join donors, drive#, and drive tables to display names, types, pints, and drive date
+//                            break;
+//                        case "2":
+//                            //sort that join by pint
+//                            break;
+//                        case "3":
+//                            //sort that join by type
+//                            break;
+//                    }
+//                } while (!choice.equals("quit"));
+//            }
+//        } catch(Exception e){
+//            System.out.println(e);
+//        }
+//    }
+
+    public void searchType(Connection conn,String type){
         Statement statement;
-        ResultSet rs;
-        String choice;
-        Scanner in = new Scanner(System.in);
-        System.out.println("Drive id?");
-        int driveID = in.nextInt();
-        try{
-            String query = String.format("SELECT TABLE_NAME FROM blooddrive.INFORMATION_SCHEMA.TABLES where TABLE_NAME='drive%s';",driveID);
-            statement=conn.createStatement();
-            rs=statement.executeQuery(query);
-            while (rs.next()){
-                String thisTable = rs.getString("TABLE_NAME");
-                System.out.println(thisTable);
-                do {
-                    System.out.println("view all: 1\nview by pint: 2\nview by type: 3\nquit");
-                    choice = in.nextLine();
-                    switch (choice) {
-                        case "1":
-                            //join donors, drive#, and drive tables to display names, types, pints, and drive date
-                            break;
-                        case "2":
-                            //sort that join by pint
-                            break;
-                        case "3":
-                            //sort that join by type
-                            break;
-                    }
-                } while (!choice.equals("quit"));
+        ResultSet rs=null;
+        try {
+            String query = String.format("select * from donors where type='%s'", type);
+            statement = conn.createStatement();
+            rs = statement.executeQuery(query);
+            System.out.println(type);
+            while (rs.next()) {
+                System.out.print(rs.getString("id") + " ");
+                System.out.println(rs.getString("name") + " ");
             }
-        } catch(Exception e){
-            System.out.println(e);
+        }catch(Exception e){
+            System.out.print(e);
+        }
+    }
+
+    public void searchDriveType(Connection conn, String tableName, String type){
+        Statement statement;
+        ResultSet rs=null;
+        try {
+            String query = String.format("select %s.donorid, donors.name, %s.given from %s inner join donors on %s.donorid=donors.id", tableName,tableName, tableName, tableName);
+            statement = conn.createStatement();
+            rs = statement.executeQuery(query);
+            System.out.println(type);
+            while (rs.next()) {
+                System.out.print(rs.getString("donorid") + " ");
+                System.out.print(rs.getString("name") + " ");
+                System.out.println(rs.getInt("given") + " ");
+            }
+        }catch(Exception e){
+            System.out.print(e);
+        }
+    }
+
+    public void searchOunces(Connection conn, String tableName, int ounces){
+        Statement statement;
+        ResultSet rs=null;
+        try {
+            String query = String.format("select * from %s join donors on %s.donorid=donors.id where given='%s'", tableName, tableName, ounces);
+            statement = conn.createStatement();
+            rs = statement.executeQuery(query);
+            System.out.println("Ounces: " + ounces);
+            while (rs.next()) {
+                System.out.print(rs.getString("id") + " ");
+                System.out.print(rs.getString("name") + " ");
+                System.out.println(rs.getString("type") + " ");
+            }
+        }catch(Exception e){
+            System.out.print(e);
+        }
+    }
+
+    public void printDriveInfo(Connection conn, int driveNum){
+        Statement statement;
+        ResultSet rs=null;
+        try {
+            String query = String.format("select truck, date, location from drive where id=%s", driveNum);
+            statement = conn.createStatement();
+            rs = statement.executeQuery(query);
+            while (rs.next()) {
+                System.out.print(rs.getString("date") + " - truck ");
+                System.out.print(rs.getString("truck") + " - ");
+                System.out.println(rs.getString("location") + "");
+            }
+        }catch(Exception e){
+            System.out.print(e);
         }
     }
 }
+
+
